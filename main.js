@@ -5,6 +5,21 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Adicionar os controles de órbita após a câmera ser criada
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // Suaviza os movimentos
+controls.dampingFactor = 0.25; // Fator de suavização
+controls.enableZoom = true;    // Permitir zoom
+controls.autoRotate = false;   // Desativado por padrão, pode ser ligado se quiser rotação automática
+controls.enablePan = true;     // Permitir que o usuário mova a câmera no plano
+
+// Posicionar a câmera
+camera.position.y = 10;
+camera.position.z = 25;
+
+//Rotação da câmera
+camera.rotation.x += 0.1;
+
 // Criar a superfície (plano)
 const planeGeometry = new THREE.PlaneGeometry(100, 100); // Plano grande
 const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x555555, side: THREE.DoubleSide }); // Material básico, cor cinza
@@ -48,7 +63,7 @@ function onClick(event) {
       updateOrionEstado('interagindo');
       responder('cripto');  // Exemplo: A pergunta será sobre criptomoedas
       atualizarInterface();  // Atualizar a interface com a resposta do Orion
-    }
+      }
   });
 }
 
@@ -77,13 +92,6 @@ const wireframe = new THREE.LineSegments(edges, lineMaterial);
 
 // Adicionar as arestas à cena
 pyramid.add(wireframe);
-
-// Posicionar a câmera
-camera.position.y = 10;
-camera.position.z = 25;
-
-//Rotação da câmera
-camera.rotation.x += 0.1;
 
 // Criar estrelas no céu
 function createStars() {
@@ -173,7 +181,10 @@ function createOrion() {
 // Função de animação
 function animate() {
   requestAnimationFrame(animate);
-  
+
+  // Atualizar os controles
+  controls.update();
+
   // Girar o cubo
   cube.rotation.x += 0.001;
   cube.rotation.y += 0.001;
@@ -181,4 +192,4 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-animate();
+animate(); //iniciar animação
