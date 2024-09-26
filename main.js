@@ -43,6 +43,11 @@ function onClick(event) {
   intersects.forEach(function (intersect) {
     if (intersect.object === cube) {
       console.log('Clique detectado no cubo!');
+   
+      // Atualizar o estado e a mensagem de Orion ao clicar no cubo
+      updateOrionEstado('interagindo');
+      responder('cripto');  // Exemplo: A pergunta será sobre criptomoedas
+      atualizarInterface();  // Atualizar a interface com a resposta do Orion
     }
   });
 }
@@ -73,13 +78,12 @@ const wireframe = new THREE.LineSegments(edges, lineMaterial);
 // Adicionar as arestas à cena
 pyramid.add(wireframe);
 
-
 // Posicionar a câmera
-camera.position.y = 1;
-camera.position.z = 20;
+camera.position.y = 10;
+camera.position.z = 25;
 
 //Rotação da câmera
-camera.rotation.x += 0.5;
+camera.rotation.x += 0.1;
 
 // Criar estrelas no céu
 function createStars() {
@@ -121,23 +125,51 @@ function createOrion() {
   
   createOrion(); // Adicionar a constelação de Órion
 
-// Criando um objeto Orion para armazenar as informações de interação
-const orion = {
-    estado: 'inicial',
-    mensagem: ''
-  };
-  
-  // Função para atualizar o estado do Orion
-  function updateOrionEstado(estado) {
-    orion.estado = estado;
-  }
-  
-  // Função para atualizar a mensagem do Orion
-  function updateOrionMensagem(mensagem) {
-    orion.mensagem = mensagem;
-  }
-  
-
+    // Criando um objeto Orion para armazenar as informações de interação
+    const orion = {
+        estado: 'inicial',
+        mensagem: ''
+    };
+    
+    // Função para atualizar o estado do Orion
+    function updateOrionEstado(estado) {
+        orion.estado = estado;
+    }
+    
+    // Função para atualizar a mensagem do Orion
+    function updateOrionMensagem(mensagem) {
+        orion.mensagem = mensagem;
+    }
+    
+    // Função para responder às perguntas e interações do usuário
+    function responder(pergunta) {
+        switch (orion.estado) {
+        case 'inicial':
+            updateOrionMensagem('Olá! Sou o Orion, aqui para ajudar.');
+            break;
+        case 'interagindo':
+            // Verificando se a pergunta é sobre criptomoedas
+            if (pergunta.includes('cripto')) {
+            updateOrionMensagem('Ah, você está interessado em criptomoedas! Eu posso te ajudar com informações e dicas.');
+            }
+            // Verificando se a pergunta é sobre finanças
+            else if (pergunta.includes('finanças')) {
+            updateOrionMensagem('Sim, eu posso te ajudar com informações sobre finanças!');
+            }
+            // Caso contrário, respondendo com uma mensagem padrão
+            else {
+            updateOrionMensagem('Desculpe, não entendi sua pergunta. Por favor, tente novamente.');
+            }
+            break;
+        }
+    }
+    
+    // Função para atualizar a interface do usuário com as informações de interação
+    function atualizarInterface() {
+        // Atualizando o texto da mensagem
+        document.getElementById('mensagem').innerHTML = orion.mensagem;
+    }
+        
 // Função de animação
 function animate() {
   requestAnimationFrame(animate);
