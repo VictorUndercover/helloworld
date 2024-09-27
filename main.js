@@ -13,6 +13,81 @@ controls.enableZoom = true;    // Permitir zoom
 controls.autoRotate = false;   // Desativado por padrão, pode ser ligado se quiser rotação automática
 controls.enablePan = true;     // Permitir que o usuário mova a câmera no plano
 
+// Variáveis de controle de movimento
+let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+let velocity = new THREE.Vector3(); // Controla a velocidade da câmera
+let direction = new THREE.Vector3(); // Direção de movimento
+let moveSpeed = 0.1; // Ajusta a velocidade de movimento
+
+// Detectar pressionamento de teclas
+window.addEventListener('keydown', (event) => {
+  switch (event.code) {
+    case 'KeyS': // Avançar
+      moveForward = true;
+      break;
+    case 'KeyW': // Recuar
+      moveBackward = true;
+      break;
+    case 'KeyA': // Mover para a esquerda
+      moveLeft = true;
+      break;
+    case 'KeyD': // Mover para a direita
+      moveRight = true;
+      break;
+  }
+});
+
+// Detectar quando as teclas são soltas
+window.addEventListener('keyup', (event) => {
+  switch (event.code) {
+    case 'KeyS':
+      moveForward = false;
+      break;
+    case 'KeyW':
+      moveBackward = false;
+      break;
+    case 'KeyA':
+      moveLeft = false;
+      break;
+    case 'KeyD':
+      moveRight = false;
+      break;
+  }
+});
+
+// Função para mover a câmera
+function moveCamera() {
+  // Reseta a direção
+  direction.set(0, 0, 0);
+
+  // Atualiza a direção com base nas teclas pressionadas
+  if (moveForward) direction.z = -1; // Z negativo para frente
+  if (moveBackward) direction.z = 1; // Z positivo para trás
+  if (moveLeft) direction.x = -1; // X negativo para a esquerda
+  if (moveRight) direction.x = 1; // X positivo para a direita
+
+  // Normaliza a direção para evitar que a velocidade varie conforme a diagonal
+  direction.normalize();
+
+  // Calcula o vetor de direção da câmera
+  const cameraDirection = new THREE.Vector3();
+  camera.getWorldDirection(cameraDirection); // Pega a direção da câmera no mundo
+
+  // Movimenta a câmera para frente e para trás com base na direção da câmera
+  if (moveForward || moveBackward) {
+    velocity.z = direction.z * moveSpeed;
+    camera.position.add(cameraDirection.multiplyScalar(velocity.z)); // Move para frente ou para trás
+  }
+
+  // Movimenta a câmera para os lados, independente da direção em que ela aponta
+  if (moveLeft || moveRight) {
+    const right = new THREE.Vector3();
+    right.crossVectors(camera.up, cameraDirection).normalize(); // Obtém a direção direita da câmera
+    velocity.x = direction.x * moveSpeed;
+    camera.position.add(right.multiplyScalar(velocity.x)); // Move para a esquerda ou direita
+  }
+}
+
 // Posicionar a câmera
 camera.position.y = 10;
 camera.position.z = 25;
@@ -68,7 +143,7 @@ function onClick(event) {
 }
 
 // Criar a geometria da pirâmide (cone com base quadrada)
-const pyramidGeometry = new THREE.ConeGeometry(5, 7, 4); // Base quadrada com 4 segmentos radiais
+const pyramidGeometry = new THREE.ConeGeometry(7, 7, 4); // Base quadrada com 4 segmentos radiais
 
 // Criar o material com cor amarela e transparência
 const pyramidMaterial = new THREE.MeshBasicMaterial({
@@ -95,14 +170,14 @@ pyramid.add(wireframe);
 
 // Criar estrelas no céu
 function createStars() {
-    const starGeometry = new THREE.SphereGeometry(0.1, 24, 24); // Pequenos pontos de luz
+    const starGeometry = new THREE.SphereGeometry(0.3, 24, 24); // Pequenos pontos de luz
     const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
   
     for (let i = 0; i < 500; i++) { // 500 estrelas
       const star = new THREE.Mesh(starGeometry, starMaterial);
-      star.position.x = (Math.random() - 0.5) * 200;
-      star.position.y = Math.random() * 100 + 10;
-      star.position.z = (Math.random() - 0.5) * 200;
+      star.position.x = (Math.random() - 0.5) * 400;
+      star.position.y = Math.random() * 200 + 20;
+      star.position.z = (Math.random() - 0.5) * 400;
       scene.add(star);
     }
   }
@@ -112,15 +187,15 @@ function createStars() {
 // Função para criar estrelas específicas para a constelação de Órion
 function createOrion() {
     const orionStars = [
-      { x: -10, y: 50, z: -30 },  // Betelgeuse
-      { x: 10, y: 40, z: -40 },   // Rigel
-      { x: 0, y: 30, z: -50 },    // Bellatrix
-      { x: -5, y: 20, z: -60 },   // Mintaka (cinturão)
-      { x: 0, y: 20, z: -65 },    // Alnilam (cinturão)
-      { x: 5, y: 20, z: -70 },    // Alnitak (cinturão)
-      { x: -2, y: 10, z: -80 }    // Saiph
+      { x: -20, y: 100, z: -60 },  // Betelgeuse
+      { x: 20, y: 80, z: -80 },   // Rigel
+      { x: 0, y: 60, z: -100 },    // Bellatrix
+      { x: -10, y: 40, z: -120 },   // Mintaka (cinturão)
+      { x: 0, y: 40, z: -130 },    // Alnilam (cinturão)
+      { x: 10, y: 40, z: -140 },    // Alnitak (cinturão)
+      { x: -4, y: 20, z: -160 }    // Saiph
     ];
-  
+
     const starGeometry = new THREE.SphereGeometry(0.3, 24, 24); // Estrelas maiores para constelação
     const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Estrelas da constelação com cor amarela
   
@@ -188,6 +263,9 @@ function animate() {
   // Girar o cubo
   cube.rotation.x += 0.001;
   cube.rotation.y += 0.001;
+
+  // Atualiza os controles da câmera
+  moveCamera();
 
   renderer.render(scene, camera);
 }
